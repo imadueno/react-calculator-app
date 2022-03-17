@@ -1,0 +1,40 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.calculator {
+  border-radius: 5px;
+  border: 1px solid #b3b3b3;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.calculator__screen {
+  border-radius: 5px;
+  border: 1px solid #b3b3b3;
+  margin: 20px;
+  padding: 10px;
+}
+
+.operation {
+  text-align: right;
+  color: #b3b3b3;
+}
+
+.input {
+  text-align: right;
+  font-size: 2rem;
+}
+
+.calculator__pad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 50px;
+  gap: 10px;
+  margin: 20px;
+}
+
+.col-2 {
+  grid-column: span 2;
+}
