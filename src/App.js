@@ -1,23 +1,30 @@
 import { useState } from "react";
 import "./styles.css";
+import execOperation, {
+  removeLastChar,
+  isDecimal
+} from "./services/calculator";
 
 export default function App() {
   // state
   const [input, setInput] = useState("0"); // captura
   const [operation, setOperation] = useState("0"); // staging o lo de arriba
+  const [isInputDecimal, setIsInputDecimal] = useState(false);
   const [inputHasOperator, setInputHasOperator] = useState(false);
   const [operacionPendiente, setOperacionPendiente] = useState(false);
-  const [isInputDecimal, setIsInputDecimal] = useState(false);
 
+  // handlers
   const handleNumber = (event) => {
     if (inputHasOperator) {
-      setInputHasOperator(false);
       setOperation(input);
-      setOperacionPendiente(true);
       setInput(event.target.value);
+      setOperacionPendiente(true);
+      setInputHasOperator(false);
       setIsInputDecimal(false);
       return;
     }
+
+    if (input.length >= 17) return;
 
     if (Number(input) === 0 && !isInputDecimal) {
       setInput(event.target.value);
@@ -34,7 +41,10 @@ export default function App() {
       case "-":
       case "+":
         if (operacionPendiente) {
-          execOperation();
+          const result = execOperation(operation, input);
+          setOperation("0");
+          setInput(result);
+          setOperacionPendiente(false);
         }
         if (inputHasOperator) {
           const tempinput = removeLastChar(input);
@@ -51,7 +61,13 @@ export default function App() {
         }
         break;
       case "=":
-        execOperation();
+        if (operation === "0") return;
+        const result = execOperation(operation, input);
+        setInput(result);
+        setOperation("0");
+        setInputHasOperator(false);
+        setOperacionPendiente(false);
+        setIsInputDecimal(isDecimal(result));
         break;
       default:
         break;
@@ -69,13 +85,14 @@ export default function App() {
       case "C":
         setInput("0");
         setOperation("0");
-        setOperacionPendiente(false);
         setIsInputDecimal(false);
+        setInputHasOperator(false);
+        setOperacionPendiente(false);
         break;
       case "DEL":
         setInput((inputValue) => {
           if (input.length > 1) {
-            return inputValue.slice(-1);
+            return removeLastChar(inputValue);
           } else {
             return "0";
           }
@@ -84,28 +101,6 @@ export default function App() {
       default:
         break;
     }
-  };
-
-  // funciones
-  const removeLastChar = (text) => text.slice(0, -1);
-
-  const execOperation = () => {
-    if (operation === "0") return;
-
-    const operators = {
-      "+": (a, b) => a + b,
-      "-": (a, b) => a - b,
-      x: (a, b) => a * b,
-      "/": (a, b) => a / b
-    };
-
-    const a = Number(removeLastChar(operation));
-    const operator = operation.slice(-1);
-    const b = Number(input);
-    const result = operators[operator](a, b);
-    setOperation("0");
-    setInput(result);
-    setOperacionPendiente(false);
   };
 
   return (
@@ -145,12 +140,13 @@ export default function App() {
 function Button({ value, cols = 1, rows = 1, onClick }) {
   // inline styles
   const style = {
-    border: "1px solid #b3b3b3",
+    border: "2px solid #b3b3b3",
     borderRadius: "5px",
     backgroundColor: "#fff",
     cursor: "pointer",
     gridColumn: `span ${cols}`,
-    gridRows: `span ${rows}`
+    gridRows: `span ${rows}`,
+    fontWeight: "bold"
   };
   return (
     <button onClick={(event) => onClick(event)} style={style} value={value}>
