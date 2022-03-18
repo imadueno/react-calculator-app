@@ -12,6 +12,7 @@ export default function App() {
   const [isInputDecimal, setIsInputDecimal] = useState(false);
   const [inputHasOperator, setInputHasOperator] = useState(false);
   const [operacionPendiente, setOperacionPendiente] = useState(false);
+  const [error, setError] = useState(null);
 
   // handlers
   const handleNumber = (event) => {
@@ -24,10 +25,12 @@ export default function App() {
       return;
     }
 
-    if (input.length >= 17) return;
-
+    if (input.length >= 17 && !error) return;
     if (Number(input) === 0 && !isInputDecimal) {
       setInput(event.target.value);
+    } else if (error) {
+      setInput(event.target.value);
+      setError(false);
     } else {
       setInput((inputValue) => `${inputValue}${event.target.value}`);
     }
@@ -40,11 +43,12 @@ export default function App() {
       case "x":
       case "-":
       case "+":
+        if (error) {
+          setInput("0");
+          setError(false);
+        }
         if (operacionPendiente) {
-          const result = execOperation(operation, input);
-          setOperation("0");
-          setInput(result);
-          setOperacionPendiente(false);
+          calc();
         }
         if (inputHasOperator) {
           const tempinput = removeLastChar(input);
@@ -55,18 +59,26 @@ export default function App() {
         setInputHasOperator(true);
         break;
       case ".":
-        if (!isInputDecimal) {
-          setInput((inputValue) => `${inputValue}.`);
-          setIsInputDecimal(true);
+        if (error) {
+          setError(false);
+          setInput("0");
         }
+        if (isInputDecimal && !inputHasOperator) return;
+        if (inputHasOperator) {
+          setOperation(input);
+          setOperacionPendiente(true);
+          setInputHasOperator(false);
+          setInput("0.");
+        } else {
+          setInput((inputValue) => `${inputValue}.`);
+        }
+        setIsInputDecimal(true);
+
         break;
       case "=":
         if (operation === "0") return;
-        const result = execOperation(operation, input);
-        setInput(result);
-        setOperation("0");
+        const result = calc();
         setInputHasOperator(false);
-        setOperacionPendiente(false);
         setIsInputDecimal(isDecimal(result));
         break;
       default:
@@ -92,6 +104,9 @@ export default function App() {
       case "DEL":
         setInput((inputValue) => {
           if (input.length > 1) {
+            if (inputValue.slice(-1) === ".") {
+              setIsInputDecimal(false);
+            }
             return removeLastChar(inputValue);
           } else {
             return "0";
@@ -101,6 +116,18 @@ export default function App() {
       default:
         break;
     }
+  };
+
+  const calc = () => {
+    let result = execOperation(operation, input);
+    if (isNaN(result)) {
+      result = "Resultado indefinido";
+      setError(true);
+    }
+    setInput(result);
+    setOperation("0");
+    setOperacionPendiente(false);
+    return result;
   };
 
   return (
