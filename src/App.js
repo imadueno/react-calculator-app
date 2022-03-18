@@ -120,7 +120,7 @@ export default function App() {
 
   const calc = () => {
     let result = execOperation(operation, input);
-    if (isNaN(result)) {
+    if (isNaN(result) || !isFinite(result)) {
       result = "Resultado indefinido";
       setError(true);
     }
