@@ -106,6 +106,12 @@ export default function App() {
   return (
     <div className="App">
       <h1>React Calculator App</h1>
+      <p>
+        Thank you for the reviews{" "}
+        <span role="img" aria-label="hands up">
+          🙌
+        </span>
+      </p>
       <div className="calculator">
         <div className="calculator__screen">
           <div className="operation">{operation}</div>
